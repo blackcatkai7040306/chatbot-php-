@@ -182,7 +182,7 @@ $(document).ready(function() {
                         </div>
                     </div>
                     <div class="ml-3 bg-blue-50 rounded-2xl p-4 shadow-sm max-w-[80%]">
-                        <div class="prose prose-sm max-w-none message-content"></div>
+                        <div class="prose prose-sm  max-w-none message-content"></div>
                         <span class="text-xs opacity-75 mt-1 block">${formatTimestamp(timestamp)}</span>
                     </div>
                 </div>
