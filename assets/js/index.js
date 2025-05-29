@@ -2,18 +2,18 @@ $(document).ready(function() {
     const chatMessages = $('#chat-messages');
     const userInput = $('#user-input');
     const sendButton = $('#send-button');
+    const chatForm = $('#chat-form');
 
-    // Static parameters
-    const courseId = 38;
-    const lessonId = 8;
-    const userId = 210;
-    const CHATBOT_URL = 'https://backend1.brainovo.com/api';
-    const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9-5-eyJpc3MiOiJ5b3VyLWFwcGxpY2F0aW9uLW5hbWUiLCJpYXQiOjE3NDgxODU5NDcsImV4cCI6MTc0ODI3MjM0Nywic3ViIjoyMTAsInJvbGUiOiJlbXBsb3llZSIsImFwaSI6Nn0-5-rxLOpoUtMt5bbSXqGAlPlNddjUha5IEreO6XDYn0b8M";
-
-    // Store messages in memory
+    const courseId = window.courseId;
+    const lessonId = window.lessonId;
+    const userId = window.userId;
+    const CHATBOT_URL = window.CHATBOT_URL;
+    const APP_API_URL = window.APP_API_URL;
+    const AUTH_TOKEN = window.AUTH_TOKEN;
+    
+    
     let messages = [];
 
-    // Configure marked options
     marked.setOptions({
         highlight: function(code, lang) {
             if (lang && hljs.getLanguage(lang)) {
@@ -25,7 +25,6 @@ $(document).ready(function() {
         gfm: true
     });
 
-    // Function to safely convert markdown to HTML
     function markdownToHtml(text) {
         // Escape any HTML in the text first
         const escapedText = text.replace(/[&<>"']/g, function(m) {
@@ -40,7 +39,7 @@ $(document).ready(function() {
         return marked.parse(escapedText);
     }
 
-    // Function to format timestamp
+
     function formatTimestamp(timestamp) {
         const date = new Date(timestamp);
         return date.toLocaleTimeString();
@@ -52,20 +51,20 @@ $(document).ready(function() {
             <div class="flex items-start ${isUser ? 'justify-end' : ''}">
                 ${!isUser ? `
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center shadow-md">
+                        <div class="w-10 h-10 rounded-full bg-[rgb(105,108,255)] flex items-center justify-center shadow-md">
                             <span class="text-white text-sm font-medium">AI</span>
                         </div>
                     </div>
                 ` : ''}
-                <div class="${isUser ? 'mr-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white' : 'ml-3 bg-blue-50 text-gray-800'} rounded-2xl p-4 shadow-sm max-w-[80%]">
-                    <div class="prose prose-sm ${isUser ? 'prose-invert' : ''} max-w-none">
+                <div class="${isUser ? 'mr-3 bg-[rgb(105,108,255)] text-white' : 'ml-3 bg-[rgb(105,108,255)] text-white'} rounded-2xl p-4 shadow-sm max-w-[80%]">
+                    <div class="prose prose-sm ${isUser ? 'prose-invert' : 'prose-invert'} max-w-none">
                         ${isUser ? message : markdownToHtml(message)}
                     </div>
                     <span class="text-xs opacity-75 mt-1 block">${formatTimestamp(timestamp)}</span>
                 </div>
                 ${isUser ? `
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
+                        <div class="w-10 h-10 rounded-full bg-[rgb(105,108,255)] flex items-center justify-center shadow-md">
                             <span class="text-white text-sm font-medium">U</span>
                         </div>
                     </div>
@@ -73,8 +72,7 @@ $(document).ready(function() {
             </div>
         `;
         chatMessages.append(messageHtml);
-        
-        // Apply syntax highlighting to any code blocks
+     
         chatMessages.find('pre code').each((i, block) => {
             hljs.highlightElement(block);
         });
@@ -106,10 +104,10 @@ $(document).ready(function() {
     }
 
     // Function to fetch lessons by course ID
-    async function fetchLessonsbyCourseID(token, courseId) {
+    async function fetchLessonsbyCourseID(AUTH_TOKEN, courseId) {
         try {
-            const apiurl = 'https://qa.brainovo.net';
-            const completeUrl = `${apiurl}/route/${token}/trainingcourse/${courseId}/traininglesson?expand=owner&dataonly=true`;
+            
+            const completeUrl = `${APP_API_URL}/route/${AUTH_TOKEN}/trainingcourse/${courseId}/traininglesson?expand=owner&dataonly=true`;
 
             const response = await fetch(completeUrl);
             if (!response.ok) {
@@ -126,7 +124,7 @@ $(document).ready(function() {
     // Function to get formatted lesson IDs
     async function getFormattedLessonIds(courseId) {
         try {
-            const lessons = await fetchLessonsbyCourseID(token, courseId);
+            const lessons = await fetchLessonsbyCourseID(AUTH_TOKEN, courseId);
             return lessons.map(lesson => `${courseId}-${lesson.id}`);
         } catch (error) {
             console.error('Error fetching lessons:', error);
@@ -173,16 +171,16 @@ $(document).ready(function() {
                 throw new Error('Failed to get response from API');
             }
 
-            // Add initial message container
+         
             const messageHtml = `
-                <div class="flex items-start bot-message">
+                <div class="flex items-start">
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center shadow-md">
+                        <div class="w-10 h-10 rounded-full bg-[rgb(105,108,255)] flex items-center justify-center shadow-md">
                             <span class="text-white text-sm font-medium">AI</span>
                         </div>
                     </div>
-                    <div class="ml-3 bg-blue-50 rounded-2xl p-4 shadow-sm max-w-[80%]">
-                        <div class="prose prose-sm  max-w-none message-content"></div>
+                    <div class="ml-3 bg-[rgb(105,108,255)] text-white rounded-2xl p-4 shadow-sm max-w-[80%]">   
+                        <div class="prose prose-sm prose-invert max-w-none message-content"></div>
                         <span class="text-xs opacity-75 mt-1 block">${formatTimestamp(timestamp)}</span>
                     </div>
                 </div>
@@ -196,7 +194,7 @@ $(document).ready(function() {
             let lastUpdate = Date.now();
             const updateInterval = 50; // Minimum time between updates in milliseconds
 
-            // Function to update the message content
+     
             const updateMessage = async (content) => {
                 const now = Date.now();
                 const timeSinceLastUpdate = now - lastUpdate;
@@ -205,10 +203,10 @@ $(document).ready(function() {
                     await new Promise(resolve => setTimeout(resolve, updateInterval - timeSinceLastUpdate));
                 }
                 
-                // Update the content in place
+               
                 messageContent.html(markdownToHtml(content));
                 
-                // Apply syntax highlighting
+                
                 messageContent.find('pre code').each((i, block) => {
                     hljs.highlightElement(block);
                 });
@@ -246,7 +244,7 @@ $(document).ready(function() {
                 }
             }
 
-            // Add final bot response to messages array
+        
             const botResponse = {
                 content: fullResponse,
                 senderid: 1,
@@ -304,33 +302,48 @@ $(document).ready(function() {
             type: 'text'
         };
 
-        // Add user message to chat and messages array
+      
         addMessage(content, true);
         messages.push(newMessage);
         userInput.val('');
 
-        // Generate and display bot response
+      
         await generateAIResponse(newMessage);
     }
 
-    // Event listeners
-    sendButton.click(sendMessage);
-    userInput.keypress(function(e) {
+    // Prevent form submission
+    chatForm.on('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+
+    // Handle send button click
+    sendButton.on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        sendMessage();
+    });
+
+    // Handle enter key press
+    userInput.on('keypress', function(e) {
         if (e.which === 13) {
+            e.preventDefault();
+            e.stopPropagation();
             sendMessage();
         }
     });
 
-    // Quick suggestion buttons
+  
     $('.quick-suggestion').click(function() {
         const suggestion = $(this).text();
         userInput.val(suggestion);
         sendMessage();
     });
 
-    // Load chat history when page loads
+  
     fetchChatHistory();
 
-    // Focus input on load
+ 
     userInput.focus();
 });
