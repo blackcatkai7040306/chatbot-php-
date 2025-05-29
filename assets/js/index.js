@@ -1,5 +1,6 @@
 $(document).ready(function() {
     const chatMessages = $('#chat-messages');
+    const chatOptions = $('#chat-options');
     const userInput = $('#user-input');
     const sendButton = $('#send-button');
     const chatForm = $('#chat-form');
@@ -10,9 +11,18 @@ $(document).ready(function() {
     const CHATBOT_URL = window.CHATBOT_URL;
     const APP_API_URL = window.APP_API_URL;
     const AUTH_TOKEN = window.AUTH_TOKEN;
+    const lessonName = window.lessonName;
+    const firstQuestion = window.firstQuestion;
     
     
     let messages = [];
+    let questionMode = false;
+    let currentQuestionIndex = 0;
+    const botQuestions = [
+        window.firstQuestion || "What are the main concepts covered in this lesson?",
+        "Can you explain one of the key points in your own words?",
+        "How would you apply what you learned in a real-world scenario?"
+    ];
 
     marked.setOptions({
         highlight: function(code, lang) {
@@ -46,7 +56,7 @@ $(document).ready(function() {
     }
 
     // Function to add a message to the chat
-    function addMessage(message, isUser = false, timestamp = new Date().toISOString()) {
+    function addMessage(message, isUser = false, timestamp = new Date().toISOString(), isHtml = false) {
         const messageHtml = `
             <div class="flex items-start ${isUser ? 'justify-end' : ''}">
                 ${!isUser ? `
@@ -58,7 +68,7 @@ $(document).ready(function() {
                 ` : ''}
                 <div class="${isUser ? 'mr-3 bg-[rgb(105,108,255)] text-white' : 'ml-3 bg-[rgb(105,108,255)] text-white'} rounded-2xl p-4 shadow-sm max-w-[80%]">
                     <div class="prose prose-sm ${isUser ? 'prose-invert' : 'prose-invert'} max-w-none">
-                        ${isUser ? message : markdownToHtml(message)}
+                        ${isHtml ? message : (isUser ? message : markdownToHtml(message))}
                     </div>
                     <span class="text-xs opacity-75 mt-1 block">${formatTimestamp(timestamp)}</span>
                 </div>
@@ -79,6 +89,70 @@ $(document).ready(function() {
         
         chatMessages.scrollTop(chatMessages[0].scrollHeight);
     }
+
+    // Function to disable/enable options
+    function disableOption(optionId) {
+        $(`#${optionId}`).addClass('disabled').off('click');
+    }
+
+    function enableOption(optionId, clickHandler) {
+        $(`#${optionId}`).removeClass('disabled').off('click').on('click', clickHandler);
+    }
+
+    function disableAllOptions() {
+        disableOption('fetch-history-card');
+        disableOption('start-bot-card');
+    }
+
+    function enableAllOptions() {
+        enableOption('fetch-history-card', function() {
+            disableOption('fetch-history-card');
+            fetchChatHistory();
+        });
+        enableOption('start-bot-card', function() {
+            disableAllOptions();
+            questionMode = true;
+            currentQuestionIndex = 0;
+            askNextQuestion();
+        });
+    }
+
+    // Function to ask the next bot question
+    function askNextQuestion() {
+        if (currentQuestionIndex < botQuestions.length) {
+            const questionText = `Question ${currentQuestionIndex + 1}/3: ${botQuestions[currentQuestionIndex]}`;
+            addMessage(questionText, false);
+            currentQuestionIndex++;
+        } else {
+            addMessage("Great job! You've completed all the questions. Feel free to ask me anything else about the lesson.", false);
+            questionMode = false;
+            currentQuestionIndex = 0;
+            // Re-enable all options when questions are completed
+            enableAllOptions();
+        }
+    }
+
+    // Show only the welcome message as the first chat message
+    chatMessages.empty();
+    addMessage(
+        `Welcome to Novo Bot, I am here to help you understand more about <span class='font-bold text-lg text-blue-200 bg-blue-700 px-2 py-1 rounded'>${lessonName}</span>. You can ask me questions to make sure you understand material. `,
+        false,
+        new Date().toISOString(),
+        true
+    );
+
+    // Render two option cards below the chat messages
+    chatOptions.html(`
+        <div class="option-card" id="fetch-history-card">
+            <div class="font-semibold text-base">Chat History</div>
+        </div>
+        <div class="option-card" id="start-bot-card">
+            <div class="font-semibold text-base">Quiz Me</div>
+        </div>
+    `);
+
+    // Initialize with all options enabled
+    enableAllOptions();
 
     // Function to fetch chat history
     async function fetchChatHistory() {
@@ -302,13 +376,26 @@ $(document).ready(function() {
             type: 'text'
         };
 
-      
         addMessage(content, true);
         messages.push(newMessage);
         userInput.val('');
 
-      
-        await generateAIResponse(newMessage);
+        // If in question mode, ask next question instead of generating AI response
+        if (questionMode && currentQuestionIndex < botQuestions.length) {
+            setTimeout(() => {
+                askNextQuestion();
+            }, 1000);
+        } else if (questionMode && currentQuestionIndex >= botQuestions.length) {
+            setTimeout(() => {
+                addMessage("Great job! You've completed all the questions. Feel free to ask me anything else about the lesson.", false);
+                questionMode = false;
+                currentQuestionIndex = 0;
+                // Re-enable all options when questions are completed
+                enableAllOptions();
+            }, 1000);
+        } else {
+            await generateAIResponse(newMessage);
+        }
     }
 
     // Prevent form submission
@@ -342,7 +429,8 @@ $(document).ready(function() {
     });
 
   
-    fetchChatHistory();
+    // Do NOT load chat history automatically
+    // fetchChatHistory();
 
  
     userInput.focus();

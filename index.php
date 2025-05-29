@@ -134,6 +134,7 @@ curl_close($ch);
     window.CHATBOT_URL = '<?=$CHATBOT_BACKEND_URL?>';
     window.APP_API_URL = '<?=$CHATBOT_APP_API_URL?>';
     window.AUTH_TOKEN = "<?=$auth_token?>";
+    window.lessonName = <?= json_encode($lesson_name) ?>;
     </script>
 </head>
 <body class="min-h-screen NO-flex items-center justify-center" style="">
@@ -144,21 +145,20 @@ curl_close($ch);
         echo "<div class='text-gray-700'>Question $key: $questiontext</div>";
     }
     ?> -->
-    <hr>
+    
+    <div class="debug-info">
+        <?php
+        echo "DEBUG: Session Org ID: $sessionorgid, User ID: $sessionuid, Role: $sessionrole";
+        ?>
+    </div>
 
     <div class="container">
-        <div class="welcome-message">
-            <h1 class="text-2xl font-bold mb-4">Welcome to Novo Bot</h1>
-            <p class="mb-4">I am here to help you understand more about <?=$lesson_name?>. You can ask me questions or I can ask you some questions to make sure you understood the material.</p>
-            <button id="start-questions" class="question-button">Yes, ask me questions</button>
-        </div>
-
         <div class="chat-container">
         <!-- Chat Messages -->
             <div id="chat-messages" class="space-y-4">
                 <!-- Messages will be dynamically added here -->
             </div>
-            
+            <div id="chat-options"></div>
             <!-- Input Bar -->
             <div class="chat-input-container">
                 <form id="chat-form" class="flex items-center gap-2" onsubmit="return false;">
@@ -170,12 +170,6 @@ curl_close($ch);
     </div>
 
     <script src="assets/js/index.js"></script>
-
-    <div class="" style="width:100%;display:block;text-align:center;margin-top:10px;">
-    <?php
-    echo "DEBUG: Session Org ID: $sessionorgid, User ID: $sessionuid, Role: $sessionrole";
-    ?>
-    </div>
 
     <script>
     document.getElementById('start-questions').addEventListener('click', function() {
