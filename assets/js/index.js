@@ -18,6 +18,8 @@ $(document).ready(function() {
     let messages = [];
     let questionMode = false;
     let currentQuestionIndex = 0;
+    let questionAnswerPairs = []; // Store Q&A pairs for backend submission
+    let currentQuizSession = []; // Store current quiz session data
     const botQuestions = [
         window.firstQuestion || "What are the main concepts covered in this lesson?",
         "Can you explain one of the key points in your own words?",
@@ -56,26 +58,40 @@ $(document).ready(function() {
     }
 
     // Function to add a message to the chat
-    function addMessage(message, isUser = false, timestamp = new Date().toISOString(), isHtml = false) {
+    function addMessage(message, isUser = false, timestamp = new Date().toISOString(), isHtml = false, isQuizQuestion = false) {
+        const quizIndicator = isQuizQuestion ? `
+            <div style="display: inline-flex; align-items: center; background: linear-gradient(135deg, rgba(255, 193, 7, 0.9), rgba(255, 152, 0, 0.9)); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(255, 193, 7, 0.3);">
+                <span style="margin-right: 4px;">🎯</span>
+                <span>QUIZ QUESTION</span>
+            </div>
+        ` : '';
+        
         const messageHtml = `
             <div class="flex items-start ${isUser ? 'justify-end' : ''}">
                 ${!isUser ? `
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-[rgb(105,108,255)] flex items-center justify-center shadow-md">
-                            <span class="text-white text-sm font-medium">AI</span>
+                        <div class="w-10 h-10 rounded-full" style="background: linear-gradient(135deg, rgb(105, 108, 255), rgb(85, 88, 235)); box-shadow: 0 2px 8px rgba(105, 108, 255, 0.3);">
+                            <span class="text-white text-sm font-medium flex items-center justify-center h-full">${isQuizQuestion ? 'Q' : 'AI'}</span>
                         </div>
                     </div>
                 ` : ''}
-                <div class="${isUser ? 'mr-3 bg-[rgb(105,108,255)] text-white' : 'ml-3 bg-[rgb(105,108,255)] text-white'} rounded-2xl p-4 shadow-sm max-w-[80%]">
-                    <div class="prose prose-sm ${isUser ? 'prose-invert' : 'prose-invert'} max-w-none">
+                <div class="${isUser ? 
+                    'mr-3 text-white' : 
+                    'ml-3 text-white'
+                } rounded-2xl p-4 shadow-sm max-w-[80%]" style="${isUser ? 
+                    'background: linear-gradient(135deg, rgba(105, 108, 255, 0.15), rgba(85, 88, 235, 0.25)); border: 1px solid rgba(105, 108, 255, 0.3); backdrop-filter: blur(8px); color: rgb(105, 108, 255);' : 
+                    'background: linear-gradient(135deg, rgb(105, 108, 255), rgb(85, 88, 235)); box-shadow: 0 3px 12px rgba(105, 108, 255, 0.25);'
+                }">
+                    ${quizIndicator}
+                    <div class="prose prose-sm ${isUser ? '' : 'prose-invert'} max-w-none">
                         ${isHtml ? message : (isUser ? message : markdownToHtml(message))}
                     </div>
                     <span class="text-xs opacity-75 mt-1 block">${formatTimestamp(timestamp)}</span>
                 </div>
                 ${isUser ? `
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-[rgb(105,108,255)] flex items-center justify-center shadow-md">
-                            <span class="text-white text-sm font-medium">U</span>
+                        <div class="w-10 h-10 rounded-full" style="background: linear-gradient(135deg, rgba(105, 108, 255, 0.2), rgba(85, 88, 235, 0.3)); border: 1px solid rgba(105, 108, 255, 0.4); backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(105, 108, 255, 0.2);">
+                            <span class="text-sm font-medium flex items-center justify-center h-full" style="color: rgb(105, 108, 255);">U</span>
                         </div>
                     </div>
                 ` : ''}
@@ -87,7 +103,142 @@ $(document).ready(function() {
             hljs.highlightElement(block);
         });
         
+        // Reposition Quiz Me button after bot messages
+        if (!isUser) {
+            setTimeout(() => {
+                positionQuizMeButton();
+            }, 100);
+        }
+        
         chatMessages.scrollTop(chatMessages[0].scrollHeight);
+    }
+
+    // Function to send individual Q&A pair to backend for evaluation
+    async function evaluateCurrentAnswer(questionData) {
+        try {
+            const formattedLessonIds = await getFormattedLessonIds(courseId);
+            addMessage("📊 Evaluating your answer...", false);
+            console.log("---------Current Question-Answer Pair---------");
+            console.log("Question Data:", questionData);
+            console.log("Formatted Lesson IDs:", formattedLessonIds);
+            const response = await fetch(`${CHATBOT_URL}/evaluate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    course_id: courseId.toString(),
+                    lesson_id: lessonId.toString(),
+                    lesson_ids: formattedLessonIds,
+                    user_id: userId.toString(),
+                    question_answers: [questionData], // Send single Q&A pair
+                    lesson_name: lessonName,
+                    question_number: questionData.question_number,
+                    is_individual_evaluation: true
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit answer for evaluation');
+            }
+
+            const result = await response.json();
+            
+            // Display the evaluation result for this specific answer
+            if (result.estimate || result.score || result.feedback) {
+                let evaluationMessage = `📋 **Answer ${questionData.question_number} Assessment:**\n\n`;
+                
+                if (result.score) {
+                    evaluationMessage += `**Score:** ${result.score}%\n\n`;
+                }
+                
+                if (result.estimate) {
+                    evaluationMessage += `**Assessment:** ${result.estimate}\n\n`;
+                }
+                
+                if (result.feedback) {
+                    evaluationMessage += `**Feedback:** ${result.feedback}\n\n`;
+                }
+                
+                if (result.suggestions) {
+                    evaluationMessage += `**Suggestions:** ${result.suggestions}\n\n`;
+                }
+                if (result.accurate_answer) {
+                    evaluationMessage += `**Correct Answer:** ${result.accurate_answer}\n\n`;
+                }
+                addMessage(evaluationMessage, false);
+            } else {
+                addMessage(`✅ Answer ${questionData.question_number} recorded. Good job!`, false);
+            }
+
+        } catch (error) {
+            console.error('Error evaluating answer:', error);
+            addMessage("Sorry, there was an error evaluating your answer. Let's continue with the next question.", false);
+        }
+    }
+
+    // Function to send Q&A data to backend for evaluation (only called at the end)
+    async function submitQuestionAnswers() {
+        try {
+            addMessage("🎉 Quiz completed! Here's your overall performance summary...", false);
+            console.log("---------Complete Quiz Session Summary---------");
+            console.log("All Questions and Answers:", currentQuizSession);
+            const formattedLessonIds = await getFormattedLessonIds(courseId);
+          
+            const response = await fetch(`${CHATBOT_URL}/evaluate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    course_id: courseId.toString(),
+                    lesson_id: lessonId.toString(),
+                    lesson_ids: formattedLessonIds,
+                    user_id: userId.toString(),
+                    question_answers: currentQuizSession,
+                    lesson_name: lessonName,
+                    total_questions: botQuestions.length,
+                    is_final_summary: true
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit quiz summary');
+            }
+
+            const result = await response.json();
+            
+            // Display the final summary
+            if (result.estimate || result.score || result.feedback) {
+                let summaryMessage = "📊 **Final Quiz Summary:**\n\n";
+                
+                if (result.overall_score) {
+                    summaryMessage += `**Overall Score:** ${result.overall_score}%\n\n`;
+                }
+                
+                if (result.overall_assessment) {
+                    summaryMessage += `**Overall Assessment:** ${result.overall_assessment}\n\n`;
+                }
+                
+                if (result.final_feedback) {
+                    summaryMessage += `**Final Feedback:** ${result.final_feedback}\n\n`;
+                }
+                
+                if (result.recommendations) {
+                    summaryMessage += `**Recommendations:** ${result.recommendations}`;
+                }
+                
+                addMessage(summaryMessage, false);
+            }
+
+            // Clear quiz session data
+            currentQuizSession = [];
+            questionAnswerPairs = [];
+
+        } catch (error) {
+            console.error('Error submitting quiz summary:', error);
+            addMessage("Quiz completed! Thank you for your participation.", false);
+        }
     }
 
     // Function to disable/enable options
@@ -101,35 +252,36 @@ $(document).ready(function() {
 
     function disableAllOptions() {
         disableOption('fetch-history-card');
-        disableOption('start-bot-card');
+        // Remove Quiz Me button during quiz mode
+        $('.quiz-me-button').remove();
     }
 
     function enableAllOptions() {
-        enableOption('fetch-history-card', function() {
-            disableOption('fetch-history-card');
-            fetchChatHistory();
-        });
-        enableOption('start-bot-card', function() {
-            disableAllOptions();
-            questionMode = true;
-            currentQuestionIndex = 0;
-            askNextQuestion();
-        });
+        enableOption('fetch-history-card', fetchChatHistory);
+        // Quiz Me button will be positioned by positionQuizMeButton() call
+        // No need to manually enable it here since it's handled in positionQuizMeButton()
     }
 
     // Function to ask the next bot question
     function askNextQuestion() {
         if (currentQuestionIndex < botQuestions.length) {
-            const questionText = `Question ${currentQuestionIndex + 1}/3: ${botQuestions[currentQuestionIndex]}`;
-            addMessage(questionText, false);
+            // Display the original question text without modification
+            const questionText = botQuestions[currentQuestionIndex];
+            // Mark this as a quiz question with special styling
+            addMessage(questionText, false, new Date().toISOString(), false, true);
+            
+            // Store the question in current session
+            const currentQuestion = {
+                question_number: currentQuestionIndex + 1,
+                question: botQuestions[currentQuestionIndex],
+                answer: null, // Will be filled when user responds
+                timestamp: new Date().toISOString()
+            };
+            currentQuizSession.push(currentQuestion);
+            
             currentQuestionIndex++;
-        } else {
-            addMessage("Great job! You've completed all the questions. Feel free to ask me anything else about the lesson.", false);
-            questionMode = false;
-            currentQuestionIndex = 0;
-            // Re-enable all options when questions are completed
-            enableAllOptions();
         }
+        // Quiz completion logic is now handled in sendMessage after evaluation
     }
 
     // Show only the welcome message as the first chat message
@@ -141,15 +293,67 @@ $(document).ready(function() {
         true
     );
 
-    // Render two option cards below the chat messages
-    chatOptions.html(`
-        <div class="option-card" id="fetch-history-card">
-            <div class="font-semibold text-base">Chat History</div>
-        </div>
-        <div class="option-card" id="start-bot-card">
-            <div class="font-semibold text-base">Quiz Me</div>
+    // Create Chat History button next to debug info
+    $('body').append(`
+        <div class="chat-history-button">
+            <div class="option-card" id="fetch-history-card">
+                <div class="font-semibold text-base">Chat History</div>
+            </div>
         </div>
     `);
+
+    // Function to position Quiz Me button relative to last bot message
+    function positionQuizMeButton() {
+        // Remove existing quiz me button
+        $('.quiz-me-button').remove();
+        
+        // Don't show Quiz Me button during quiz mode
+        if (questionMode) {
+            return;
+        }
+        
+        // Find the last bot message (not user message)
+        const botMessages = chatMessages.find('.flex.items-start').not('.justify-end');
+        const lastBotMessage = botMessages.last();
+        
+        if (lastBotMessage.length > 0) {
+            // Create Quiz Me button and append it after the last bot message
+            const quizButton = $(`
+                <div class="quiz-me-button">
+                    <div id="quiz-me-card">
+                        <div class="font-semibold text-base">Quiz Me</div>
+                    </div>
+                </div>
+            `);
+            
+            lastBotMessage.after(quizButton);
+            
+            // Bind click event
+            $('#quiz-me-card').off('click').on('click', function() {
+                if (!$(this).hasClass('disabled')) {
+                    // Start new quiz session
+                    questionMode = true;
+                    currentQuestionIndex = 0;
+                    currentQuizSession = []; // Reset quiz session data
+                    disableAllOptions(); // Disable buttons during quiz
+                    
+                    // Hide Quiz Me button immediately when quiz starts
+                    $('.quiz-me-button').remove();
+                    
+                    addMessage("🎯 Starting quiz session! I'll ask you 3 questions about the lesson.", false);
+                    setTimeout(() => {
+                        askNextQuestion();
+                    }, 1000);
+                }
+            });
+        }
+    }
+
+    // Position Quiz Me button initially
+    positionQuizMeButton();
+
+    // Clear the chat options area since Quiz Me is now positioned separately
+    chatOptions.html('');
 
     // Initialize with all options enabled
     enableAllOptions();
@@ -249,11 +453,11 @@ $(document).ready(function() {
             const messageHtml = `
                 <div class="flex items-start">
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-[rgb(105,108,255)] flex items-center justify-center shadow-md">
-                            <span class="text-white text-sm font-medium">AI</span>
+                        <div class="w-10 h-10 rounded-full" style="background: linear-gradient(135deg, rgb(105, 108, 255), rgb(85, 88, 235)); box-shadow: 0 2px 8px rgba(105, 108, 255, 0.3);">
+                            <span class="text-white text-sm font-medium flex items-center justify-center h-full">AI</span>
                         </div>
                     </div>
-                    <div class="ml-3 bg-[rgb(105,108,255)] text-white rounded-2xl p-4 shadow-sm max-w-[80%]">   
+                    <div class="ml-3 text-white rounded-2xl p-4 shadow-sm max-w-[80%]" style="background: linear-gradient(135deg, rgb(105, 108, 255), rgb(85, 88, 235)); box-shadow: 0 3px 12px rgba(105, 108, 255, 0.25);">   
                         <div class="prose prose-sm prose-invert max-w-none message-content"></div>
                         <span class="text-xs opacity-75 mt-1 block">${formatTimestamp(timestamp)}</span>
                     </div>
@@ -330,6 +534,11 @@ $(document).ready(function() {
             };
             messages.push(botResponse);
 
+            // Reposition Quiz Me button after bot response
+            setTimeout(() => {
+                positionQuizMeButton();
+            }, 100);
+
             return botResponse;
 
         } catch (error) {
@@ -380,22 +589,49 @@ $(document).ready(function() {
         messages.push(newMessage);
         userInput.val('');
 
-        // If in question mode, ask next question instead of generating AI response
-        if (questionMode && currentQuestionIndex < botQuestions.length) {
-            setTimeout(() => {
-                askNextQuestion();
-            }, 1000);
-        } else if (questionMode && currentQuestionIndex >= botQuestions.length) {
-            setTimeout(() => {
-                addMessage("Great job! You've completed all the questions. Feel free to ask me anything else about the lesson.", false);
-                questionMode = false;
-                currentQuestionIndex = 0;
-                // Re-enable all options when questions are completed
-                enableAllOptions();
-            }, 1000);
-        } else {
-            await generateAIResponse(newMessage);
+        // If in question mode, ONLY handle quiz Q&A - no AI responses
+        if (questionMode) {
+            // Find the current question in the session and add the user's answer
+            const currentQuestionIndex_zero = currentQuestionIndex - 1; // Adjust for zero-based indexing
+            if (currentQuestionIndex_zero >= 0 && currentQuestionIndex_zero < currentQuizSession.length) {
+                currentQuizSession[currentQuestionIndex_zero].answer = content;
+                currentQuizSession[currentQuestionIndex_zero].answer_timestamp = new Date().toISOString();
+                
+                console.log(`Stored answer for question ${currentQuestionIndex_zero + 1}:`, content);
+                
+                // Evaluate this specific question-answer pair immediately
+                const currentQuestionData = currentQuizSession[currentQuestionIndex_zero];
+                
+                setTimeout(async () => {
+                    await evaluateCurrentAnswer(currentQuestionData);
+                    
+                    // After evaluation, continue with next question or finish quiz
+                    setTimeout(() => {
+                        if (currentQuestionIndex < botQuestions.length) {
+                            askNextQuestion();
+                        } else {
+                            // All questions answered and evaluated - show final summary
+                            setTimeout(() => {
+                                submitQuestionAnswers();
+                                questionMode = false; // Exit quiz mode
+                                currentQuestionIndex = 0;
+                                
+                                // Re-enable all options and show Quiz Me button after summary
+                                setTimeout(() => {
+                                    enableAllOptions();
+                                    positionQuizMeButton(); // Show Quiz Me button again
+                                }, 2000);
+                            }, 1000);
+                        }
+                    }, 1500); // Wait for evaluation response to be displayed
+                }, 500);
+            }
+            // Don't generate AI response during quiz mode - return early
+            return;
         }
+
+        // Normal chat mode - generate AI response (only when NOT in quiz mode)
+        await generateAIResponse(newMessage);
     }
 
     // Prevent form submission
