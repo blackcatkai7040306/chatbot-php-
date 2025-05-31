@@ -60,8 +60,10 @@ $(document).ready(function() {
     // Function to add a message to the chat
     function addMessage(message, isUser = false, timestamp = new Date().toISOString(), isHtml = false, isQuizQuestion = false) {
         const quizIndicator = isQuizQuestion ? `
-            <div style="display: inline-flex; align-items: center; background: linear-gradient(135deg, rgba(255, 193, 7, 0.9), rgba(255, 152, 0, 0.9)); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(255, 193, 7, 0.3);">
-                <span style="margin-right: 4px;">🎯</span>
+            <div style="display: inline-flex; align-items: center; background: linear-gradient(135deg, rgba(255, 183, 77, 0.9), rgba(245, 158, 11, 0.9)); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(255, 183, 77, 0.3);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px;">
+                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L13.5 2.5L16.17 5.17L10.59 10.75C9.77 11.57 8.45 11.57 7.63 10.75L5.12 8.24L3.71 9.65L6.22 12.16C7.46 13.4 8.96 14.02 10.46 14.02V16H8V18H16V16H13.54C15.04 16 16.54 15.38 17.78 14.14L21 10.9V9H21Z" fill="currentColor"/>
+                </svg>
                 <span>QUIZ QUESTION</span>
             </div>
         ` : '';
@@ -70,8 +72,16 @@ $(document).ready(function() {
             <div class="flex items-start ${isUser ? 'justify-end' : ''}">
                 ${!isUser ? `
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full" style="background: linear-gradient(135deg, rgb(105, 108, 255), rgb(85, 88, 235)); box-shadow: 0 2px 8px rgba(105, 108, 255, 0.3);">
-                            <span class="text-white text-sm font-medium flex items-center justify-center h-full">${isQuizQuestion ? 'Q' : 'AI'}</span>
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, rgb(105, 108, 255), rgb(85, 88, 235)); box-shadow: 0 2px 8px rgba(105, 108, 255, 0.3);">
+                            ${isQuizQuestion ? `
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9.5 7.5C9.5 5.01 11.51 3 14 3s4.5 2.01 4.5 4.5c0 2.31-1.64 4.22-3.75 4.65v1.35h-1.5v-1.35C11.14 11.72 9.5 9.81 9.5 7.5zM12.25 14h1.5v1.5h-1.5V14zM21 19.5H3v-1.5h18v1.5z" fill="white"/>
+                                </svg>
+                            ` : `
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C13.1 2 14 2.9 14 4V8C14 9.1 13.1 10 12 10S10 9.1 10 8V4C10 2.9 10.9 2 12 2ZM12 12C14.21 12 16 13.79 16 16V20C16 21.1 15.1 22 14 22H10C8.9 22 8 21.1 8 20V16C8 13.79 9.79 12 12 12ZM12 14C10.9 14 10 14.9 10 16V20H14V16C14 14.9 13.1 14 12 14ZM19 8C19.55 8 20 8.45 20 9S19.55 10 19 10 18 9.55 18 9 18.45 8 19 8ZM5 8C5.55 8 6 8.45 6 9S5.55 10 5 10 4 9.55 4 9 4.45 8 5 8ZM17.24 4.76C17.63 4.37 18.26 4.37 18.65 4.76S19.04 5.89 18.65 6.28 17.52 6.67 17.13 6.28 16.74 5.65 17.13 4.76H17.24ZM6.76 4.76C7.15 5.15 7.15 5.78 6.76 6.17S5.63 6.56 5.24 6.17 4.85 5.54 5.24 4.65C5.63 4.26 6.26 4.26 6.76 4.76Z" fill="white"/>
+                                </svg>
+                            `}
                         </div>
                     </div>
                 ` : ''}
@@ -90,8 +100,10 @@ $(document).ready(function() {
                 </div>
                 ${isUser ? `
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full" style="background: linear-gradient(135deg, rgba(105, 108, 255, 0.2), rgba(85, 88, 235, 0.3)); border: 1px solid rgba(105, 108, 255, 0.4); backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(105, 108, 255, 0.2);">
-                            <span class="text-sm font-medium flex items-center justify-center h-full" style="color: rgb(105, 108, 255);">U</span>
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, rgba(105, 108, 255, 0.2), rgba(85, 88, 235, 0.3)); border: 1px solid rgba(105, 108, 255, 0.4); backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(105, 108, 255, 0.2);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 12C14.21 12 16 10.21 16 8S14.21 4 12 4 8 5.79 8 8 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="rgb(105, 108, 255)"/>
+                            </svg>
                         </div>
                     </div>
                 ` : ''}
@@ -379,6 +391,9 @@ function getScoreColor(score, isBg = false) {
     $('body').append(`
         <div class="chat-history-button">
             <div class="option-card" id="fetch-history-card">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 4px;">
+                    <path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2ZM16.5 16.25L11 12.25V7H12.5V11.25L17.25 14.75L16.5 16.25Z" fill="rgb(21, 128, 61)"/>
+                </svg>
                 <div class="font-semibold text-base">Chat History</div>
             </div>
         </div>
@@ -403,6 +418,9 @@ function getScoreColor(score, isBg = false) {
             const quizButton = $(`
                 <div class="quiz-me-button">
                     <div id="quiz-me-card">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 4px;">
+                            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="rgb(180, 83, 9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
                         <div class="font-semibold text-base">Quiz Me</div>
                     </div>
                 </div>
@@ -506,6 +524,7 @@ function getScoreColor(score, isBg = false) {
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
+            <span>Sending...</span>
         `);
 
         try {
@@ -642,9 +661,10 @@ function getScoreColor(score, isBg = false) {
             userInput.prop('disabled', false);
             sendButton.prop('disabled', false);
             sendButton.html(`
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                 </svg>
+                <span>Send</span>
             `);
             userInput.focus();
         }

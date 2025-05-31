@@ -147,6 +147,9 @@ curl_close($ch);
     ?> -->
     
     <div class="debug-info">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; margin-right: 8px; vertical-align: middle;">
+            <path d="M12 2L13.09 8.26L19 9L13.09 9.74L12 16L10.91 9.74L5 9L10.91 8.26L12 2ZM21 10C21.78 10 22.34 10.56 22.34 11.34S21.78 12.68 21 12.68 19.66 12.12 19.66 11.34 20.22 10 21 10ZM17 6C17.78 6 18.34 6.56 18.34 7.34S17.78 8.68 17 8.68 15.66 8.12 15.66 7.34 16.22 6 17 6Z" fill="currentColor"/>
+        </svg>
         <?php
         echo "DEBUG: Session Org ID: $sessionorgid, User ID: $sessionuid, Role: $sessionrole";
         ?>
@@ -163,7 +166,12 @@ curl_close($ch);
             <div class="chat-input-container">
                 <form id="chat-form" class="flex items-center gap-2" onsubmit="return false;">
                     <input type="text" id="user-input" class="chat-input flex-1 rounded-full px-4 py-2 focus:outline-none" placeholder="Type your question..." autocomplete="off" />
-                    <button type="button" id="send-button" class="send-button px-6 py-2 rounded-full font-semibold transition">Send</button>
+                    <button type="button" id="send-button" class="send-button px-6 py-2 rounded-full font-semibold transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        <span>Send</span>
+                    </button>
                 </form>
             </div>
         </div>

@@ -144,27 +144,91 @@
 /* Base styles with responsive typography */
 body { 
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #f8f9fc 0%, #e8ecf7 100%);
+    background: linear-gradient(135deg, #fef7f0 0%, #f8fafc 25%, #fdf4ff 50%, #f0fdf4 75%, #fffbeb 100%);
+    background-size: 300% 300%;
+    animation: gradientShift 15s ease infinite;
     min-height: 100vh;
     padding: 20px;
     margin: 0;
     overflow: hidden;
-    font-size: 16px; /* Base font size for desktop */
+    font-size: 16px;
     line-height: 1.6;
+    position: relative;
+}
+
+/* Decorative geometric patterns */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2334d399' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fb7185' fill-opacity='0.02' fill-rule='evenodd'%3E%3Cpath d='M20 20c0 11.046-8.954 20-20 20s-20-8.954-20-20 8.954-20 20-20 20 8.954 20 20zM0 20c0 11.046 8.954 20 20 20s20-8.954 20-20S31.046 0 20 0 0 8.954 0 20z'/%3E%3C/g%3E%3C/svg%3E");
+    background-position: 0 0, 30px 30px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.7;
+    animation: patternMove 40s linear infinite;
+}
+
+@keyframes patternMove {
+    0% { background-position: 0 0, 30px 30px; }
+    100% { background-position: 60px 60px, 90px 90px; }
+}
+
+/* Animated background gradient */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Floating particles effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(255, 183, 77, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(251, 113, 133, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 2;
+    animation: floatingParticles 20s ease-in-out infinite;
+}
+
+@keyframes floatingParticles {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-20px) rotate(120deg); }
+    66% { transform: translateY(10px) rotate(240deg); }
 }
 
 .debug-info {
-    background: linear-gradient(135deg, rgba(105, 108, 255, 0.85), rgba(85, 88, 235, 0.9));
+    background: linear-gradient(135deg, rgba(251, 113, 133, 0.8), rgba(236, 72, 153, 0.85));
     color: white;
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 12px;
     text-align: center;
     margin: 0 auto 15px auto;
     max-width: 600px;
     position: relative;
     z-index: 10;
-    box-shadow: 0 2px 8px rgba(105, 108, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(251, 113, 133, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: gentlePulse 3s ease-in-out infinite;
+}
+
+@keyframes gentlePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(251, 113, 133, 0.3); }
+    50% { transform: scale(1.02); box-shadow: 0 6px 20px rgba(251, 113, 133, 0.4); }
 }
 
 .chat-history-button {
@@ -173,16 +237,22 @@ body {
     top: 55px;
     transform: translateX(-50%);
     z-index: 100;
+    animation: floatGentle 4s ease-in-out infinite;
+}
+
+@keyframes floatGentle {
+    0%, 100% { transform: translateX(-50%) translateY(0px); }
+    50% { transform: translateX(-50%) translateY(-5px); }
 }
 
 #fetch-history-card {
-    background: linear-gradient(135deg, rgba(105, 108, 255, 0.1), rgba(85, 88, 235, 0.15));
-    border: 1.5px solid rgba(105, 108, 255, 0.3);
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(105, 108, 255, 0.15);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(21, 128, 61, 0.2));
+    border: 1.5px solid rgba(34, 197, 94, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 6px 25px rgba(34, 197, 94, 0.2);
     padding: 12px 16px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     width: 135px;
     text-align: center;
     display: flex;
@@ -190,52 +260,47 @@ body {
     align-items: center;
     position: relative;
     overflow: hidden;
-    font-size: 14px; /* Default fallback - will be overridden by responsive styles */
+    font-size: 14px;
     font-weight: 600;
-    color: rgb(105, 108, 255);
-    backdrop-filter: blur(8px);
+    color: rgb(21, 128, 61);
+    backdrop-filter: blur(15px);
 }
 
 #fetch-history-card::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(105, 108, 255, 0.4), rgba(105, 108, 255, 0.8), rgba(105, 108, 255, 0.4));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-#fetch-history-card:hover, #fetch-history-card:focus {
-    box-shadow: 0 6px 20px rgba(105, 108, 255, 0.25);
-    border-color: rgba(105, 108, 255, 0.5);
-    background: linear-gradient(135deg, rgba(105, 108, 255, 0.2), rgba(85, 88, 235, 0.25));
-    transform: translateY(-2px);
-    color: rgb(75, 78, 225);
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
 }
 
 #fetch-history-card:hover::before {
-    opacity: 1;
+    left: 100%;
+}
+
+#fetch-history-card:hover, #fetch-history-card:focus {
+    box-shadow: 0 10px 35px rgba(34, 197, 94, 0.35);
+    border-color: rgba(34, 197, 94, 0.5);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(21, 128, 61, 0.3));
+    transform: translateY(-3px) scale(1.05);
+    color: rgb(15, 118, 110);
 }
 
 #fetch-history-card.disabled {
     opacity: 0.45;
     cursor: not-allowed;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(248, 248, 248, 0.8));
-    border-color: rgba(105, 108, 255, 0.08);
+    background: linear-gradient(135deg, rgba(156, 163, 175, 0.7), rgba(107, 114, 128, 0.8));
+    border-color: rgba(156, 163, 175, 0.3);
 }
 
 #fetch-history-card.disabled:hover, #fetch-history-card.disabled:focus {
-    box-shadow: 0 3px 12px rgba(105, 108, 255, 0.08);
-    border-color: rgba(105, 108, 255, 0.08);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(248, 248, 248, 0.8));
+    box-shadow: 0 6px 25px rgba(34, 197, 94, 0.2);
+    border-color: rgba(156, 163, 175, 0.3);
+    background: linear-gradient(135deg, rgba(156, 163, 175, 0.7), rgba(107, 114, 128, 0.8));
     transform: none;
-}
-
-#fetch-history-card.disabled::before {
-    opacity: 0;
 }
 
 /* Quiz Me button positioned relative to last bot message */
@@ -245,16 +310,17 @@ body {
     transform: translateX(-50%);
     margin-top: 10px;
     z-index: 100;
+    animation: floatGentle 4s ease-in-out infinite 2s;
 }
 
 #quiz-me-card {
-    background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(254, 90, 90, 0.2));
-    border: 1.5px solid rgba(255, 107, 107, 0.4);
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(255, 107, 107, 0.2);
+    background: linear-gradient(135deg, rgba(255, 183, 77, 0.18), rgba(245, 158, 11, 0.25));
+    border: 1.5px solid rgba(255, 183, 77, 0.4);
+    border-radius: 16px;
+    box-shadow: 0 6px 25px rgba(255, 183, 77, 0.25);
     padding: 12px 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     width: 120px;
     text-align: center;
     display: flex;
@@ -262,34 +328,33 @@ body {
     align-items: center;
     position: relative;
     overflow: hidden;
-    font-size: 14px; /* Default fallback - will be overridden by responsive styles */
-    color: rgb(220, 38, 38);
+    font-size: 14px;
+    color: rgb(180, 83, 9);
     font-weight: 600;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(15px);
 }
 
 #quiz-me-card::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(255, 107, 107, 0.5), rgba(255, 107, 107, 0.8), rgba(255, 107, 107, 0.5));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-#quiz-me-card:hover, #quiz-me-card:focus {
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
-    border-color: rgba(255, 107, 107, 0.6);
-    background: linear-gradient(135deg, rgba(255, 107, 107, 0.25), rgba(254, 90, 90, 0.3));
-    transform: translateY(-2px);
-    color: rgb(185, 28, 28);
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.6s ease;
 }
 
 #quiz-me-card:hover::before {
-    opacity: 1;
+    left: 100%;
+}
+
+#quiz-me-card:hover, #quiz-me-card:focus {
+    box-shadow: 0 10px 35px rgba(255, 183, 77, 0.4);
+    border-color: rgba(255, 183, 77, 0.6);
+    background: linear-gradient(135deg, rgba(255, 183, 77, 0.3), rgba(245, 158, 11, 0.4));
+    transform: translateY(-3px) scale(1.05);
+    color: rgb(146, 64, 14);
 }
 
 #quiz-me-card.disabled {
@@ -301,14 +366,10 @@ body {
 }
 
 #quiz-me-card.disabled:hover, #quiz-me-card.disabled:focus {
-    box-shadow: 0 3px 12px rgba(255, 107, 107, 0.2);
+    box-shadow: 0 6px 25px rgba(255, 183, 77, 0.25);
     border-color: rgba(156, 163, 175, 0.3);
     background: linear-gradient(135deg, rgba(156, 163, 175, 0.8), rgba(107, 114, 128, 0.8));
     transform: none;
-}
-
-#quiz-me-card.disabled::before {
-    opacity: 0;
 }
 
 .container {
@@ -321,20 +382,67 @@ body {
     flex-direction: column;
     margin: 0 auto;
     position: relative;
+    z-index: 5;
 }
 
 /* Chat container */
 .chat-container {
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(12px);
-    border-radius: 24px;
-    box-shadow: 0 12px 40px rgba(105, 108, 255, 0.12);
-    border: 1px solid rgba(105, 108, 255, 0.15);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 28px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.1),
+        0 8px 25px rgba(34, 197, 94, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     height: calc(85vh - 30px);
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    animation: containerGlow 6s ease-in-out infinite;
+}
+
+/* Decorative corner elements */
+.chat-container::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2322c55e' fill-opacity='0.15'%3E%3Cpath d='M10 1L12.09 7.26L19 8L12.09 8.74L10 15L7.91 8.74L1 8L7.91 7.26L10 1Z'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+    pointer-events: none;
+    animation: sparkle 3s ease-in-out infinite;
+    z-index: 1;
+}
+
+@keyframes sparkle {
+    0%, 100% { 
+        opacity: 0.3; 
+        transform: scale(1) rotate(0deg); 
+    }
+    50% { 
+        opacity: 0.8; 
+        transform: scale(1.2) rotate(180deg); 
+    }
+}
+
+@keyframes containerGlow {
+    0%, 100% { 
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.1),
+            0 8px 25px rgba(34, 197, 94, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    50% { 
+        box-shadow: 
+            0 25px 70px rgba(0, 0, 0, 0.12),
+            0 12px 35px rgba(251, 113, 133, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
 }
 
 #chat-messages {
@@ -343,7 +451,7 @@ body {
     padding: 20px;
     padding-bottom: 20px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(105, 108, 255, 0.35) transparent;
+    scrollbar-color: rgba(34, 197, 94, 0.4) transparent;
     position: relative;
 }
 
@@ -357,12 +465,12 @@ body {
 }
 
 #chat-messages::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(105, 108, 255, 0.4), rgba(105, 108, 255, 0.6));
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.5), rgba(21, 128, 61, 0.7));
     border-radius: 3px;
 }
 
 #chat-messages::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(105, 108, 255, 0.6), rgba(85, 88, 235, 0.7));
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.7), rgba(21, 128, 61, 0.8));
 }
 
 #chat-options {
@@ -370,59 +478,80 @@ body {
     gap: 12px;
     justify-content: center;
     padding: 15px 20px;
-    border-top: 1px solid rgba(105, 108, 255, 0.12);
-    background: linear-gradient(180deg, rgba(105, 108, 255, 0.03), rgba(105, 108, 255, 0.06));
+    border-top: 1px solid rgba(34, 197, 94, 0.15);
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.04), rgba(34, 197, 94, 0.08));
+    backdrop-filter: blur(10px);
 }
 
 /* Chat input container */
 .chat-input-container {
-    background: rgba(255, 255, 255, 0.97);
-    border-top: 1px solid rgba(105, 108, 255, 0.12);
+    background: rgba(255, 255, 255, 0.98);
+    border-top: 1px solid rgba(34, 197, 94, 0.15);
     padding: 15px;
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
     position: relative;
     height: 60px;
     z-index: 10;
+    backdrop-filter: blur(15px);
 }
 
 /* Chat input */
 .chat-input {
     background: rgba(255, 255, 255, 0.9);
-    border: 1.5px solid rgba(105, 108, 255, 0.2);
+    border: 1.5px solid rgba(34, 197, 94, 0.25);
     color: #333;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
 }
 
 .chat-input:focus {
-    border-color: rgba(105, 108, 255, 0.6);
-    box-shadow: 0 0 0 3px rgba(105, 108, 255, 0.1);
-    background: white;
+    border-color: rgba(34, 197, 94, 0.6);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+    background: rgba(255, 255, 255, 0.95);
+    transform: scale(1.02);
 }
 
 /* Send button */
 .send-button {
-    background: linear-gradient(135deg, rgb(105, 108, 255), rgb(95, 98, 245));
+    background: linear-gradient(135deg, rgb(34, 197, 94), rgb(21, 128, 61));
     color: white;
     margin-right: 10px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(105, 108, 255, 0.25);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.send-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.send-button:hover::before {
+    left: 100%;
 }
 
 .send-button:hover {
-    background: linear-gradient(135deg, rgb(85, 88, 235), rgb(75, 78, 225));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(105, 108, 255, 0.35);
+    background: linear-gradient(135deg, rgb(21, 128, 61), rgb(15, 118, 110));
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
 }
 
 .option-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
-    border: 1.5px solid rgba(105, 108, 255, 0.15);
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(105, 108, 255, 0.08);
+    border: 1.5px solid rgba(34, 197, 94, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.12);
     padding: 14px 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     flex: 1;
     max-width: 200px;
     text-align: center;
@@ -431,57 +560,59 @@ body {
     align-items: center;
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(15px);
 }
 
 .option-card::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(105, 108, 255, 0.3), rgba(105, 108, 255, 0.6), rgba(105, 108, 255, 0.3));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.option-card:hover, .option-card:focus {
-    box-shadow: 0 6px 20px rgba(105, 108, 255, 0.15);
-    border-color: rgba(105, 108, 255, 0.4);
-    background: linear-gradient(135deg, rgba(105, 108, 255, 0.02), rgba(105, 108, 255, 0.05));
-    transform: translateY(-2px);
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.1), transparent);
+    transition: left 0.6s ease;
 }
 
 .option-card:hover::before {
-    opacity: 1;
+    left: 100%;
+}
+
+.option-card:hover, .option-card:focus {
+    box-shadow: 0 12px 35px rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.4);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.1));
+    transform: translateY(-3px) scale(1.02);
 }
 
 .option-card.disabled {
     opacity: 0.45;
     cursor: not-allowed;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(248, 248, 248, 0.8));
-    border-color: rgba(105, 108, 255, 0.08);
+    border-color: rgba(34, 197, 94, 0.1);
 }
 
 .option-card.disabled:hover, .option-card.disabled:focus {
-    box-shadow: 0 3px 12px rgba(105, 108, 255, 0.08);
-    border-color: rgba(105, 108, 255, 0.08);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.1);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(248, 248, 248, 0.8));
     transform: none;
 }
 
-.option-card.disabled::before {
-    opacity: 0;
-}
-
 /* Message animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes fadeInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px) scale(0.95); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
 }
 
 #chat-messages > div {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Typing indicator animation */
@@ -702,6 +833,7 @@ body {
     .debug-info {
         font-size: 11px;
         padding: 6px 12px;
+        animation: gentlePulse 4s ease-in-out infinite;
     }
     
     #chat-messages {
@@ -733,21 +865,26 @@ body {
     
     .chat-container {
         height: calc(90vh - 20px);
+        border-radius: 24px;
+        backdrop-filter: blur(15px);
     }
     
     #chat-options {
         flex-direction: column;
         gap: 8px;
         padding: 12px 15px;
+        backdrop-filter: blur(8px);
     }
     
     .option-card {
         max-width: none;
+        backdrop-filter: blur(12px);
     }
     
     .chat-history-button {
         left: 72%;
         top: 47px;
+        animation: floatGentle 5s ease-in-out infinite;
     }
     
     #fetch-history-card {
@@ -755,6 +892,8 @@ body {
         padding: 9px 12px;
         font-size: 11px !important;
         font-weight: 600 !important;
+        backdrop-filter: blur(12px);
+        border-radius: 14px;
     }
     
     #fetch-history-card .font-semibold,
@@ -765,6 +904,7 @@ body {
     
     .quiz-me-button {
         margin-top: 8px;
+        animation: floatGentle 5s ease-in-out infinite 1s;
     }
     
     #quiz-me-card {
@@ -772,6 +912,8 @@ body {
         padding: 9px 14px;
         font-size: 11px !important;
         font-weight: 600 !important;
+        backdrop-filter: blur(12px);
+        border-radius: 14px;
     }
     
     #quiz-me-card .font-semibold,
@@ -784,11 +926,15 @@ body {
     .chat-input-container {
         padding: 12px;
         height: 55px;
+        border-bottom-left-radius: 24px;
+        border-bottom-right-radius: 24px;
+        backdrop-filter: blur(12px);
     }
     
     .chat-input {
         font-size: 14px;
         padding: 10px 14px;
+        backdrop-filter: blur(8px);
     }
     
     .send-button {
@@ -808,6 +954,10 @@ body {
     body {
         font-size: 13px;
         line-height: 1.4;
+    }
+    
+    body::before {
+        animation: floatingParticles 25s ease-in-out infinite;
     }
     
     .prose {
@@ -838,6 +988,7 @@ body {
     .chat-history-button {
         left: 65%;
         top: 41px;
+        animation: floatGentle 6s ease-in-out infinite;
     }
     
     #fetch-history-card {
@@ -845,6 +996,8 @@ body {
         padding: 7px 8px;
         font-size: 9px !important;
         font-weight: 600 !important;
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
     }
     
     #fetch-history-card .font-semibold,
@@ -855,6 +1008,7 @@ body {
     
     .quiz-me-button {
         margin-top: 6px;
+        animation: floatGentle 6s ease-in-out infinite 1.5s;
     }
     
     #quiz-me-card {
@@ -862,6 +1016,8 @@ body {
         padding: 7px 10px;
         font-size: 9px !important;
         font-weight: 600 !important;
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
     }
     
     #quiz-me-card .font-semibold,
@@ -874,11 +1030,13 @@ body {
     .chat-input-container {
         padding: 10px;
         height: 50px;
+        backdrop-filter: blur(10px);
     }
     
     .chat-input {
         font-size: 13px;
         padding: 8px 12px;
+        backdrop-filter: blur(6px);
     }
     
     .send-button {
@@ -898,6 +1056,10 @@ body {
     body {
         font-size: 12px;
         line-height: 1.3;
+    }
+    
+    body::before {
+        animation: floatingParticles 30s ease-in-out infinite;
     }
     
     .prose {
@@ -928,6 +1090,7 @@ body {
     .chat-history-button {
         left: 58%;
         top: 35px;
+        animation: floatGentle 7s ease-in-out infinite;
     }
     
     #fetch-history-card {
@@ -935,6 +1098,8 @@ body {
         padding: 5px 6px;
         font-size: 7px !important;
         font-weight: 600 !important;
+        backdrop-filter: blur(8px);
+        border-radius: 10px;
     }
     
     #fetch-history-card .font-semibold,
@@ -945,6 +1110,7 @@ body {
     
     .quiz-me-button {
         margin-top: 4px;
+        animation: floatGentle 7s ease-in-out infinite 2s;
     }
     
     #quiz-me-card {
@@ -952,6 +1118,8 @@ body {
         padding: 5px 6px;
         font-size: 7px !important;
         font-weight: 600 !important;
+        backdrop-filter: blur(8px);
+        border-radius: 10px;
     }
     
     #quiz-me-card .font-semibold,
@@ -964,11 +1132,13 @@ body {
     .chat-input-container {
         padding: 8px;
         height: 45px;
+        backdrop-filter: blur(8px);
     }
     
     .chat-input {
         font-size: 12px;
         padding: 6px 10px;
+        backdrop-filter: blur(5px);
     }
     
     .send-button {
@@ -1017,11 +1187,13 @@ body {
     .chat-input-container {
         padding: 14px;
         height: 58px;
+        backdrop-filter: blur(12px);
     }
     
     .chat-input {
         font-size: 15px;
         padding: 11px 16px;
+        backdrop-filter: blur(8px);
     }
     
     .send-button {
@@ -1030,4 +1202,43 @@ body {
         padding: 11px 18px;
         margin-right: 5px;
     }
+    
+    .chat-container {
+        backdrop-filter: blur(16px);
+    }
+}
+
+/* Additional glowing effects for enhanced fog appearance */
+.chat-container::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        rgba(34, 197, 94, 0.1), 
+        rgba(251, 113, 133, 0.1), 
+        rgba(255, 183, 77, 0.1), 
+        rgba(34, 197, 94, 0.1)
+    );
+    background-size: 400% 400%;
+    border-radius: 30px;
+    z-index: -1;
+    animation: borderGlow 8s ease-in-out infinite;
+    opacity: 0.6;
+}
+
+@keyframes borderGlow {
+    0%, 100% { background-position: 0% 50%; opacity: 0.6; }
+    50% { background-position: 100% 50%; opacity: 0.8; }
+}
+
+/* Enhanced message entrance animations */
+#chat-messages > div:nth-child(even) {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+}
+
+#chat-messages > div:nth-child(odd) {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.05s both;
 }
