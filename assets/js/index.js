@@ -178,69 +178,151 @@ $(document).ready(function() {
     }
 
     // Function to send Q&A data to backend for evaluation (only called at the end)
-    async function submitQuestionAnswers() {
-        try {
-            addMessage("🎉 Quiz completed! Here's your overall performance summary...", false);
-            console.log("---------Complete Quiz Session Summary---------");
-            console.log("All Questions and Answers:", currentQuizSession);
-            const formattedLessonIds = await getFormattedLessonIds(courseId);
-          
-            const response = await fetch(`${CHATBOT_URL}/evaluate`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    course_id: courseId.toString(),
-                    lesson_id: lessonId.toString(),
-                    lesson_ids: formattedLessonIds,
-                    user_id: userId.toString(),
-                    question_answers: currentQuizSession,
-                    lesson_name: lessonName,
-                    total_questions: botQuestions.length,
-                    is_final_summary: true
-                })
-            });
+   async function submitQuestionAnswers() {
+    try {
+        addMessage("🎉 Quiz completed! Generating your performance summary...", false);
+        const formattedLessonIds = await getFormattedLessonIds(courseId);
+        
+        // Prepare the request data
+        const requestData = {
+            course_id: courseId.toString(),
+            lesson_id: lessonId.toString(),
+            user_id: userId.toString(),
+            lesson_ids: formattedLessonIds,
+            lesson_name: lessonName,
+            question_answers: currentQuizSession.map((qa, index) => ({
+                question_number: index + 1,
+                question: qa.question,
+                answer: qa.answer,
+                lesson_id: lessonId.toString(),
+                course_id: courseId.toString(),
+                user_id: userId.toString()
+            })),
+            is_individual_evaluation: false,
+            is_final_summary: true,
+            total_questions: currentQuizSession.length
+        };
 
-            if (!response.ok) {
-                throw new Error('Failed to submit quiz summary');
-            }
+        const response = await fetch(`${CHATBOT_URL}/evaluate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        });
 
-            const result = await response.json();
+        if (!response.ok) {
+            throw new Error('Failed to submit quiz summary');
+        }
+
+        const result = await response.json();
+        console.log("Quiz Summary Result:", result);
+        // Display the overall summary
+        if (result.overall_score !== undefined) {
+            let summaryMessage = `
+                <div class="mb-4 p-4 rounded-xl" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.15)); border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <h3 class="text-xl font-bold mb-2 text-green-600">Quiz Summary</h3>
+                    <div class="flex items-center mb-3">
+                        <div class="text-4xl font-bold mr-3" style="color: ${getScoreColor(result.overall_score)};">
+                            ${result.overall_score}%
+                        </div>
+                        <div>
+                            <div class="text-lg font-semibold">${result.overall_assessment}</div>
+                            <div class="text-sm opacity-80">${currentQuizSession.length} questions answered</div>
+                        </div>
+                    </div>
+                    <p class="mb-2">${result.final_feedback}</p>
+                    <p><strong>Recommendations:</strong> ${result.recommendations}</p>
+                </div>
+            `;
             
-            // Display the final summary
-            if (result.estimate || result.score || result.feedback) {
-                let summaryMessage = "📊 **Final Quiz Summary:**\n\n";
-                
-                if (result.overall_score) {
-                    summaryMessage += `**Overall Score:** ${result.overall_score}%\n\n`;
-                }
-                
-                if (result.overall_assessment) {
-                    summaryMessage += `**Overall Assessment:** ${result.overall_assessment}\n\n`;
-                }
-                
-                if (result.final_feedback) {
-                    summaryMessage += `**Final Feedback:** ${result.final_feedback}\n\n`;
-                }
-                
-                if (result.recommendations) {
-                    summaryMessage += `**Recommendations:** ${result.recommendations}`;
-                }
-                
-                addMessage(summaryMessage, false);
-            }
-
-            // Clear quiz session data
-            currentQuizSession = [];
-            questionAnswerPairs = [];
-
-        } catch (error) {
-            console.error('Error submitting quiz summary:', error);
+            // Add a chart visualization
+            summaryMessage += `
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-3">Performance Breakdown</h4>
+                    <div class="flex items-end h-32 gap-2 mb-4">
+            `;
+            
+            result.question_answers_breakdown.forEach(item => {
+                const height = Math.max(20, item.score); // Ensure minimum height
+                summaryMessage += `
+                    <div class="flex flex-col items-center flex-1">
+                        <div 
+                            class="w-full rounded-t-md transition-all duration-500 ease-out"
+                            style="height: ${height}%; background: linear-gradient(to top, ${getScoreColor(item.score, true)}, ${getScoreColor(item.score)});"
+                        ></div>
+                        <div class="text-xs mt-1">Q${item.question_number}</div>
+                        <div class="text-xs font-semibold" style="color: ${getScoreColor(item.score)};">
+                            ${item.score}%
+                        </div>
+                    </div>
+                `;
+            });
+            
+            summaryMessage += `
+                    </div>
+                </div>
+            `;
+            
+            // Add a table for detailed breakdown
+            summaryMessage += `
+                <h4 class="text-lg font-semibold mb-3">Question Analysis</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Question</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Your Answer</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Score</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Feedback</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Correct Answer</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-700">
+            `;
+            
+            result.question_answers_breakdown.forEach(item => {
+                summaryMessage += `
+                    <tr class="hover:bg-gray-800 transition-colors">
+                        <td class="px-4 py-3 text-sm">${item.question}</td>
+                        <td class="px-4 py-3 text-sm max-w-xs">${item.answer || 'No answer'}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                                style="background-color: ${getScoreColor(item.score, true)}; color: ${item.score > 60 ? 'white' : 'black'}">
+                                ${item.score}% - ${item.estimate}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm">${item.feedback}</td>
+                        <td class="px-4 py-3 text-sm font-medium" style="color: #10B981;">${item.accurate_answer}</td>
+                    </tr>
+                `;
+            });
+            
+            summaryMessage += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            addMessage(summaryMessage, false, new Date().toISOString(), true);
+        } else {
             addMessage("Quiz completed! Thank you for your participation.", false);
         }
-    }
 
+    } catch (error) {
+        console.error('Error submitting quiz summary:', error);
+        addMessage("Quiz completed! Thank you for your participation.", false);
+    }
+}
+
+// Helper function to get color based on score
+function getScoreColor(score, isBg = false) {
+    if (score >= 90) return isBg ? '#065F46' : '#10B981'; // Emerald
+    if (score >= 80) return isBg ? '#047857' : '#34D399'; // Green
+    if (score >= 70) return isBg ? '#0C4A6E' : '#0EA5E9'; // Sky
+    if (score >= 60) return isBg ? '#9A3412' : '#F97316'; // Orange
+    return isBg ? '#7F1D1D' : '#EF4444'; // Red
+}
     // Function to disable/enable options
     function disableOption(optionId) {
         $(`#${optionId}`).addClass('disabled').off('click');
